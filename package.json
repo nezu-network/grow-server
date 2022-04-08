@@ -1,0 +1,25 @@
+{
+  "name": "growtopia-private-server",
+  "version": "1.0.0",
+  "description": "A growtopia private server written in NodeJS",
+  "main": "dist",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "start": "node -r dotenv/config dist",
+    "start:dev": "npm run build && npm start"
+  },
+  "author": "KagChi",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "@types/ws": "^8.5.3",
+    "dotenv": "^16.0.0",
+    "growsockets": "github:Pogtopia/Growsockets#a490651f58f9220a423ecacb6e5cdd12baa1a49d",
+    "itemsdat": "github:Pogtopia/itemsdat#bdef25b19917b92c3dfb3e2f42e5a5fe2c59d74f",
+    "ws": "^8.5.0"
+  }
+}

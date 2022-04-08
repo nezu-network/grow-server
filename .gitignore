@@ -1,0 +1,13 @@
+# Assets
+assets
+
+# Module
+node_modules
+package-lock.json
+
+# Config
+config.json
+*.env
+
+# Compiled
+dist
