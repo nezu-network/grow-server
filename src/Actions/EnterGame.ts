@@ -10,10 +10,14 @@ export class EnterGame extends Action {
     }
     public async run(peer: Peer<{ netID: number }>, actions: Map<unknown, any>) {
         peer.send(
+            Variant.from(
+                "OnConsoleMessage",
+                `Welcome back, \`w${this.container.server.userGrowIdCache.get(peer.data.netID)}\`\`.`,
+            ),
             Variant.from("OnRequestWorldSelectMenu"),
             Variant.from(
-            "OnConsoleMessage",
-            `Welcome \`1${this.container.server.userGrowIdCache.get(peer.data.netID)}\`\`. Where would you like to go?`
+                "OnConsoleMessage",
+                `Where would you like to go? (\`w${this.container.server.userGrowIdCache.size}\`\` online)`,
             ),
         );
     }

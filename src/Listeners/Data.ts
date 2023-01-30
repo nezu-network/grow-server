@@ -22,7 +22,7 @@ export class Data extends Listener {
         case DataTypes.ACTION: {
                 const packetAction = ParseAction(data);
                 const action = this.container.stores.get("actions").get(packetAction.get("action"));
-                const isGuest = packetAction.has("requestedName");
+                const isGuest = !packetAction.has("tankIDName");
                 console.log(packetAction);
 
                 /** TODO: HANDLE FOR USER GROWID VALIDATION */
@@ -32,7 +32,7 @@ export class Data extends Listener {
                             "OnSuperMainStartAcceptLogonHrdxs47254722215a",
                             this.container.server.data.items.hash,
                             "ubistatic-a.akamaihd.net",
-                            "0098/63543/cache/",
+                            "0098/23840/cache/",
                             "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
                             "proto=117|choosemusic=audio/mp3/spooky_tiki.mp3|active_holiday=9|server_tick=226933875|wing_week_day=0|server_tick=48726610|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|" 
                         ),

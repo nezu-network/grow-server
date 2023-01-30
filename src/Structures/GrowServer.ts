@@ -3,13 +3,15 @@ import { DefaultCache, Server } from "growsockets";
 import { join } from "node:path";
 import { ListenerStore } from "../Stores/ListenerStore";
 import { Hash } from "../Utilities/Functions/Hash";
-import fs from "node:fs";
+import fs, { readFileSync } from "node:fs";
 import { ActionStore } from "../Stores/ActionStore";
+import express from "express";
+import http from "node:http";
+import https from "node:https";
 
 export class GrowServer extends Server<unknown, unknown, unknown> {
     public constructor() {
         super({
-            cache: new DefaultCache(),
             http: { enabled: process.env.ENABLE_HTTP === "true" },
             usingNewPacket: false
         })
@@ -27,6 +29,24 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
         container.stores = this.stores;
 
         await Promise.all([...this.stores.values()].map((store) => store.loadAll()));
+
+        const expressApp = express();
+
+        expressApp.use("/growtopia/server_data.php", (req, res) => {
+            res.send(
+              "server|127.0.0.1\nport|17091\ntype|1\n#maint|Server is under maintenance. We will be back online shortly. Thank you for your patience! \nmeta|undefined\nRTENDMARKERBS1001"
+            );
+        });
+        
+        const httpServer = http.createServer(expressApp);
+        const httpsServer = https.createServer({
+            key: readFileSync("./assets/ssl/server.key"),
+            cert: readFileSync("./assets/ssl/server.cert")
+        }, expressApp);
+
+        httpServer.listen(80);
+        httpsServer.listen(443);
+        
         return super.listen();
     }
 
@@ -40,13 +60,13 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
 
 declare module '@sapphire/pieces' {
 	interface Container {
-		server: GrowServer;
-		stores: StoreRegistry;
+        server: GrowServer;
+        stores: StoreRegistry;
         logger: GrowServer["log"];
 	}
 
 	interface StoreRegistryEntries {
-		listeners: ListenerStore;
+        listeners: ListenerStore;
         actions: ActionStore;
 	}
 } 
