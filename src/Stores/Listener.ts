@@ -14,7 +14,7 @@ export abstract class Listener extends Piece {
 				? this.container.server
 				: (typeof options.emitter === 'string' ? (Reflect.get(this.container.server, options.emitter) as EventEmitter) : options.emitter) ??
 				  null;
-        this._listener = this.emitter && options.event ? (options.once ? this._runOnce.bind(this) : this._run.bind(this)) : null;
+        this._listener = this.emitter && (options.event ?? options.name) ? (options.once ? this._runOnce.bind(this) : this._run.bind(this)) : null;
 
         if (this.emitter === null || this._listener === null) this.enabled = false;
     }
