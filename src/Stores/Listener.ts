@@ -26,7 +26,7 @@ export abstract class Listener extends Piece {
 			const maxListeners = emitter.getMaxListeners();
 			if (maxListeners !== 0) emitter.setMaxListeners(maxListeners + 1);
 
-			emitter[this.options.once ? 'once' : 'on'](this.options.event, this._listener);
+			emitter[this.options.once ? 'once' : 'on'](this.options.event ?? this.options.name, this._listener);
 		}
 		return super.onLoad();
 	}
@@ -38,7 +38,7 @@ export abstract class Listener extends Piece {
 			const maxListeners = emitter.getMaxListeners();
 			if (maxListeners !== 0) emitter.setMaxListeners(maxListeners - 1);
 
-			emitter.off(this.options.event, this._listener);
+			emitter.off(this.options.event ?? this.options.name, this._listener);
 			this._listener = null;
 		}
 
@@ -62,7 +62,7 @@ export abstract class Listener extends Piece {
 
 export interface ListenerOptions {
     name: string;
-    event: string;
+    event?: string;
     emitter?: string;
     once?: boolean;
 } 

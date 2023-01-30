@@ -5,8 +5,7 @@ import { Listener } from "../Stores/Listener";
 export class Connect extends Listener {
     public constructor(context: PieceContext) {
         super(context, {
-            name: "connect",
-            event: "connect"
+            name: "connect"
         })
     }
     public async run(netID: number) {

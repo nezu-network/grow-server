@@ -8,8 +8,7 @@ import ParseAction from "../Utilities/Functions/ParseAction";
 export class Data extends Listener {
     public constructor(context: PieceContext) {
         super(context, {
-            name: "data",
-            event: "data"
+            name: "data"
         })
     }
     public async run(netID: number, data: Buffer) {
