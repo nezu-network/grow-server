@@ -12,7 +12,6 @@ import https from "node:https";
 export class GrowServer extends Server<unknown, unknown, unknown> {
     public constructor() {
         super({
-            http: { enabled: process.env.ENABLE_HTTP === "true" },
             usingNewPacket: false
         })
 
