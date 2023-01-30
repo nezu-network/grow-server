@@ -1,5 +1,5 @@
 import { container, StoreRegistry } from "@sapphire/pieces";
-import { DefaultCache, Server } from "growsockets";
+import { Server } from "growsockets";
 import { join } from "node:path";
 import { ListenerStore } from "../Stores/ListenerStore";
 import { Hash } from "../Utilities/Functions/Hash";
@@ -11,9 +11,7 @@ import https from "node:https";
 
 export class GrowServer extends Server<unknown, unknown, unknown> {
     public constructor() {
-        super({
-            usingNewPacket: false
-        })
+        super()
 
         container.server = this;
         container.logger = this.log;
