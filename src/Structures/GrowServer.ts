@@ -8,6 +8,8 @@ import { ActionStore } from "../Stores/ActionStore";
 import express from "express";
 import http from "node:http";
 import https from "node:https";
+import { DialogStore } from "../Stores/DialogStore";
+import { PrismaClient } from "@prisma/client";
 
 export class GrowServer extends Server<unknown, unknown, unknown> {
     public constructor() {
@@ -17,12 +19,13 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
         container.logger = this.log;
     }
 
-    /** TODO: handle with redis cache. */
-    public userGrowIdCache = new Map();
+    public prisma = new PrismaClient();
+
     public stores = new StoreRegistry();
     public async listen() {
         this.stores.register(new ListenerStore().registerPath(join(__dirname, '..', 'Listeners')));
         this.stores.register(new ActionStore().registerPath(join(__dirname, '..', 'Actions')));
+        this.stores.register(new DialogStore().registerPath(join(__dirname, '..', 'Dialogs')));
         container.stores = this.stores;
 
         await Promise.all([...this.stores.values()].map((store) => store.loadAll()));
@@ -43,6 +46,9 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
 
         httpServer.listen(80);
         httpsServer.listen(443);
+
+        await this.prisma.$connect();
+        await this.prisma.player.updateMany({ data: { lastNetId: -1 } });
         
         return super.listen();
     }
@@ -52,6 +58,12 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
             hash: `${Hash(fs.readFileSync("./assets/dat/items.dat"))}`,
             content: fs.readFileSync("./assets/dat/items.dat"),
         }
+    }
+
+    public shutdown() {
+        void this.prisma.player.updateMany({ data: { lastNetId: -1 } });
+        void this.prisma.$disconnect();
+        void this.log("Server gracefully shutdown.");
     }
 }
 
@@ -65,5 +77,6 @@ declare module '@sapphire/pieces' {
 	interface StoreRegistryEntries {
         listeners: ListenerStore;
         actions: ActionStore;
+        dialogs: DialogStore;
 	}
 } 

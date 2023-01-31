@@ -9,7 +9,13 @@ export class RefreshItemData extends Action {
         })
     }
     public async run(peer: Peer<{ netID: number }>, actions: Map<unknown, any>) {
-        this.container.server.userGrowIdCache.delete(peer.data.netID);
-        peer.disconnect();
+        await this.container.server.prisma.player.update({
+            where: {
+                lastNetId: peer.data.netID
+            },
+            data: {
+                lastNetId: -1
+            }
+        });
     }
 }

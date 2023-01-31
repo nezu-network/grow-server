@@ -8,6 +8,14 @@ export class Disconnect extends Listener {
         })
     }
     public async run(netID: number) {
-        this.container.server.userGrowIdCache.delete(netID);
+        await this.container.logger("Peer", netID, "Disconnected.");
+        await this.container.server.prisma.player.update({
+            where: {
+                lastNetId: netID
+            },
+            data: {
+                lastNetId: -1
+            }
+        });
     }
 }
