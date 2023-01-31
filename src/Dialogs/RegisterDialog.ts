@@ -39,7 +39,7 @@ export class RegisterDialog extends Dialog {
             throw new Error("The password you entered is invalid.");
         }
 
-        if (!/^[a-zA-Z0-9+_-]*$/.test(email)) {
+        if (!/^[a-zA-Z0-9.@+_-]*$/.test(email)) {
             throw new Error("The email you entered is invalid.");
         }
 
