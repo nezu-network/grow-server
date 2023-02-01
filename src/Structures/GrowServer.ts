@@ -10,6 +10,8 @@ import http from "node:http";
 import https from "node:https";
 import { DialogStore } from "../Stores/DialogStore";
 import { PrismaClient } from "@prisma/client";
+import { ItemsDatMeta } from "itemsdat/bin/src/Types";
+import { ItemsDat } from "itemsdat";
 
 export class GrowServer extends Server<unknown, unknown, unknown> {
     public constructor() {
@@ -27,6 +29,8 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
         this.stores.register(new ActionStore().registerPath(join(__dirname, '..', 'Actions')));
         this.stores.register(new DialogStore().registerPath(join(__dirname, '..', 'Dialogs')));
         container.stores = this.stores;
+
+        this.data.items.metadata = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
 
         await Promise.all([...this.stores.values()].map((store) => store.loadAll()));
 
@@ -57,6 +61,7 @@ export class GrowServer extends Server<unknown, unknown, unknown> {
         items: {
             hash: `${Hash(fs.readFileSync("./assets/dat/items.dat"))}`,
             content: fs.readFileSync("./assets/dat/items.dat"),
+            metadata: {} as ItemsDatMeta
         }
     }
 

@@ -2,7 +2,7 @@ import { PieceContext } from "@sapphire/pieces";
 import { Peer } from "growsockets";
 import { Action } from "../Stores/Action";
 
-export class RefreshItemData extends Action {
+export class Quit extends Action {
     public constructor(context: PieceContext) {
         super(context, {
             name: "quit",

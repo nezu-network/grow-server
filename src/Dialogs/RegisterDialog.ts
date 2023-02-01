@@ -1,7 +1,7 @@
 import { PieceContext } from "@sapphire/pieces";
 import { Peer, Variant } from "growsockets";
 import { Dialog } from "../Stores/Dialog";
-import crypto from "crypto";
+import crypto, { randomBytes } from "crypto";
 
 export class RegisterDialog extends Dialog {
     public constructor(context: PieceContext) {
@@ -63,6 +63,7 @@ export class RegisterDialog extends Dialog {
                 password: encryptedString,
                 email,
                 lastNetId: peer.data.netID,
+                id: randomBytes(32).toString("hex")
             }
         });
 
