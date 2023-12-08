@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
     image: 'postgres:16-alpine'
     env_file:
-      - ./postgres/.postgres.env
+      - .env
     ports:
       - '5440:5432'
     networks:
