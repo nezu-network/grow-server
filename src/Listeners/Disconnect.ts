@@ -8,14 +8,25 @@ export class Disconnect extends Listener {
         })
     }
     public async run(netID: number) {
-        await this.container.logger("Peer", netID, "Disconnected.");
-        await this.container.server.prisma.player.update({
+        this.container.server.peerId.delete(netID);
+        this.container.logger.info(`Peer with netID ${netID} disconnected !`);
+
+        const player = await this.container.server.prisma.player.findFirst({
             where: {
                 lastNetId: netID
             },
-            data: {
-                lastNetId: -1
-            }
+            select: { id: true }
         });
+
+        if (player) {
+            await this.container.server.prisma.player.update({
+                where: {
+                    id: player.id
+                },
+                data: {
+                    lastNetId: -1
+                }
+            });
+        }
     }
 }

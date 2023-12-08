@@ -1,6 +1,6 @@
 import { PieceContext } from "@sapphire/pieces";
-import { Peer } from "growsockets";
 import { Action } from "../Stores/Action";
+import { Peer } from "growtopia.js";
 
 export class Quit extends Action {
     public constructor(context: PieceContext) {
@@ -9,13 +9,26 @@ export class Quit extends Action {
         })
     }
     public async run(peer: Peer<{ netID: number }>, actions: Map<unknown, any>) {
-        await this.container.server.prisma.player.update({
+        this.container.server.peerId.delete(peer.data?.netID);
+        peer.disconnect("now");
+        const player = await this.container.server.prisma.player.findFirst({
             where: {
-                lastNetId: peer.data.netID
+                lastNetId: peer.data?.netID
             },
-            data: {
-                lastNetId: -1
-            }
+            select: { id: true }
         });
+
+        if (player) {
+            if (player) {
+                await this.container.server.prisma.player.update({
+                    where: {
+                        id: player.id
+                    },
+                    data: {
+                        lastNetId: -1
+                    }
+                });
+            }
+        }
     }
 }

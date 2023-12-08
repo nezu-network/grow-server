@@ -1,7 +1,7 @@
 import { PieceContext } from "@sapphire/pieces";
-import { Peer, Variant } from "growsockets";
 import { Dialog } from "../Stores/Dialog";
 import crypto, { randomBytes } from "crypto";
+import { Peer, Variant } from "growtopia.js";
 
 export class RegisterDialog extends Dialog {
     public constructor(context: PieceContext) {
@@ -43,40 +43,61 @@ export class RegisterDialog extends Dialog {
             throw new Error("The email you entered is invalid.");
         }
 
-        const player = await this.container.server.prisma.player.findUnique({
+        const playerUsername = await this.container.server.prisma.player.findFirst({
             where: {
                 name: username
             }
         });
 
-        if (player) {
+        if (playerUsername) {
             throw new Error("The username you entered is already taken.");
+        }
+
+        const playerEmail = await this.container.server.prisma.player.findFirst({
+            where: {
+                email: username
+            }
+        });
+        
+        if (playerEmail) {
+            throw new Error("The email you entered is already taken.");
         }
 
         const cipher = crypto.createCipheriv("aes-256-cbc", process.env.KEY!, process.env.IV!);
         const encrypted = cipher.update(password);
         const encryptedString = Buffer.concat([encrypted, cipher.final()]).toString("hex");
 
-        await this.container.server.prisma.player.create({
-            data: {
-                name: username,
-                password: encryptedString,
-                email,
-                lastNetId: peer.data.netID,
-                id: randomBytes(32).toString("hex")
-            }
+        const guest = await this.container.server.prisma.player.findFirst({
+            where: {
+                lastNetId: peer.data?.netID,
+                name: null,
+                password: null,
+                email: null
+            },
+            select: { id: true }
         });
 
+        if (guest === null) {
+            throw new Error("You looks suspicious...")
+        } else {
+            await this.container.server.prisma.player.update({
+                where: {
+                    id: guest.id,
+                },
+                data: {
+                    name: username,
+                    password: encryptedString,
+                    email,
+                    lastNetId: -1,
+                    id: randomBytes(32).toString("hex")
+                }
+            });
+        }
         peer.send(
-            Variant.from(
-                "OnSuperMainStartAcceptLogonHrdxs47254722215a",
-                this.container.server.data.items.hash,
-                "ubistatic-a.akamaihd.net",
-                "0098/23840/cache/",
-                "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-                "proto=117|choosemusic=audio/mp3/about_theme.mp3|active_holiday=9|server_tick=226933875|wing_week_day=0|server_tick=48726610|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|" 
-            ),
-            Variant.from("SetHasGrowID", 1, username, password)
-        )
+            Variant.from("SetHasGrowID", 1, username, password),
+            Variant.from({ delay: 500 }, "OnConsoleMessage","Please Re-login to validate session !")
+        );
+
+        peer.disconnect("now");
     }
 }

@@ -1,6 +1,7 @@
 import { Piece, PieceContext } from "@sapphire/pieces";
 import { fromAsync, isErr } from "@sapphire/result";
-import EventEmitter from "node:events";
+import { GrowServer } from "../Structures/GrowServer";
+import { EventEmitter } from "eventemitter3";
 
 export abstract class Listener extends Piece {
     private _listener: ((...args: any[]) => void) | null;
@@ -23,9 +24,6 @@ export abstract class Listener extends Piece {
 		if (this._listener) {
 			const emitter = this.emitter!;
 
-			const maxListeners = emitter.getMaxListeners();
-			if (maxListeners !== 0) emitter.setMaxListeners(maxListeners + 1);
-
 			emitter[this.options.once ? 'once' : 'on'](this.options.event ?? this.options.name, this._listener);
 		}
 		return super.onLoad();
@@ -34,9 +32,6 @@ export abstract class Listener extends Piece {
 	public onUnload() {
 		if (!this.options.once && this._listener) {
 			const emitter = this.emitter!;
-
-			const maxListeners = emitter.getMaxListeners();
-			if (maxListeners !== 0) emitter.setMaxListeners(maxListeners - 1);
 
 			emitter.off(this.options.event ?? this.options.name, this._listener);
 			this._listener = null;

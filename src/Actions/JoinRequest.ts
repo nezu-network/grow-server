@@ -1,10 +1,10 @@
 import { PieceContext } from "@sapphire/pieces";
-import { Peer, TankPacket, Variant } from "growsockets";
 import { Action } from "../Stores/Action";
 import { TankTypes } from "../Utilities/Enums/TankTypes";
 import { TileExtra } from "../Utilities/Functions/TIleExtra";
 import { WorldBlock } from "@prisma/client";
 import { randomBytes } from "crypto";
+import { Peer, Variant, TankPacket } from "growtopia.js";
 
 export class JoinRequest extends Action {
     public constructor(context: PieceContext) {
@@ -36,9 +36,9 @@ export class JoinRequest extends Action {
             );
         }
 
-        const player = await this.container.server.prisma.player.findUnique({ 
+        const player = await this.container.server.prisma.player.findFirst({ 
             where: {
-                lastNetId: peer.data.netID
+                lastNetId: peer.data?.netID
             }
         });
 
@@ -53,6 +53,20 @@ export class JoinRequest extends Action {
                 id: true
             }
         });
+
+        const inventory = {
+            max: 32,
+            items: [
+              {
+                id: 18, // Fist
+                amount: 1
+              },
+              {
+                id: 32, // Wrench
+                amount: 1
+              }
+            ]
+        };
 
         if (world) {
             const blocks = await this.container.server.prisma.worldBlock.findMany({
@@ -74,11 +88,11 @@ export class JoinRequest extends Action {
                   { delay: -1 },
                   "OnSpawn",
                   "spawn|avatar\n" +
-                    `netID|${peer.data.netID}\n` +
+                    `netID|${peer.data?.netID}\n` +
                     `userID|${player!.id}\n` +
                     `colrect|0|0|20|30\n` +
                     `posXY|${xPos}|${yPos}\n` +
-                    `name|\`w${player!.name}\`\`\n` +
+                    `name|\`8@${player?.name ? player!.name: `${player!.requestedName}_${player!.tag}`}\`\`\n` +
                     `country|us\n` +
                     "invis|0\n" +
                     "mstate|0\n" +
@@ -89,7 +103,7 @@ export class JoinRequest extends Action {
           
                 Variant.from(
                   {
-                    netID: peer.data.netID
+                    netID: peer.data?.netID
                   },
                   "OnSetClothing",
                   [0, 0, 0],
@@ -97,7 +111,29 @@ export class JoinRequest extends Action {
                   [0, 0, 0],
                   0x8295c3ff,
                   [0, 0.0, 0.0]
-                )
+                ),
+
+                TankPacket.from({
+                    type: TankTypes.PEER_INVENTORY,
+                    data: () => {
+                      const buffer = Buffer.alloc(7 + inventory.items.length * 4);
+            
+                      buffer.writeUInt8(0x1); // type?
+                      buffer.writeUInt32LE(inventory.max, 1);
+                      buffer.writeUInt16LE(inventory.items.length, 5);
+            
+                      let offset = 7;
+            
+                      inventory.items.forEach((item) => {
+                        buffer.writeUInt16LE(item.id, offset);
+                        buffer.writeUInt16LE(item.amount, offset + 2); // use bitwise OR (1 << 8) if item is equipped. could be wrong
+            
+                        offset += 4;
+                      });
+            
+                      return buffer;
+                    }
+                })
               );
         } else {
             const blocks: Omit<WorldBlock, "id" | "world" | "worldId">[] = [];
@@ -166,22 +202,20 @@ export class JoinRequest extends Action {
                 }
             });
 
-            for (const block of blocks) {
-                await this.container.server.prisma.worldBlock.create({
-                    data: {
-                        id: randomBytes(32).toString("hex"),
-                        worldId: world.id,
-                        x: block.x,
-                        y: block.y,
-                        fg: block.fg,
-                        bg: block.bg,
-                        rotatedLeft: block.rotatedLeft,
-                        door: block.door ?? undefined,
-                        sign: block.sign ?? undefined,
-                        lock: block.lock ?? undefined
-                    }
-                })
-            }
+            await this.container.server.prisma.worldBlock.createMany({
+                data: blocks.map(block => ({
+                    id: randomBytes(32).toString("hex"),
+                    worldId: world.id,
+                    x: block.x,
+                    y: block.y,
+                    fg: block.fg,
+                    bg: block.bg,
+                    rotatedLeft: block.rotatedLeft,
+                    door: block.door ?? undefined,
+                    sign: block.sign ?? undefined,
+                    lock: block.lock ?? undefined
+                }))
+            })
 
             peer.send(tank);
 
@@ -190,11 +224,11 @@ export class JoinRequest extends Action {
                   { delay: -1 },
                   "OnSpawn",
                   "spawn|avatar\n" +
-                    `netID|${peer.data.netID}\n` +
+                    `netID|${peer.data?.netID}\n` +
                     `userID|${player!.id}\n` +
                     `colrect|0|0|20|30\n` +
                     `posXY|${xPos}|${yPos}\n` +
-                    `name|\`w${player!.name}\`\`\n` +
+                    `name|\`8@${player?.name ? player!.name: `${player!.requestedName}_${player!.tag}`}\`\`\n` +
                     `country|us\n` +
                     "invis|0\n" +
                     "mstate|0\n" +
@@ -205,7 +239,7 @@ export class JoinRequest extends Action {
           
                 Variant.from(
                   {
-                    netID: peer.data.netID
+                    netID: peer.data?.netID
                   },
                   "OnSetClothing",
                   [0, 0, 0],
@@ -213,7 +247,29 @@ export class JoinRequest extends Action {
                   [0, 0, 0],
                   0x8295c3ff,
                   [0, 0.0, 0.0]
-                )
+                ),
+
+                TankPacket.from({
+                    type: TankTypes.PEER_INVENTORY,
+                    data: () => {
+                      const buffer = Buffer.alloc(7 + inventory.items.length * 4);
+            
+                      buffer.writeUInt8(0x1); // type?
+                      buffer.writeUInt32LE(inventory.max, 1);
+                      buffer.writeUInt16LE(inventory.items.length, 5);
+            
+                      let offset = 7;
+            
+                      inventory.items.forEach((item) => {
+                        buffer.writeUInt16LE(item.id, offset);
+                        buffer.writeUInt16LE(item.amount, offset + 2); // use bitwise OR (1 << 8) if item is equipped. could be wrong
+            
+                        offset += 4;
+                      });
+            
+                      return buffer;
+                    }
+                })
               );
         }
     }
@@ -234,16 +290,14 @@ export class JoinRequest extends Action {
                 buffer.writeUInt32LE(height, 12 + name.length);
                 buffer.writeUInt32LE(blockCount, 16 + name.length);
 
-                const blockBytes: number[] = [];
-
-                for (const block of blocks) {
+                const blockBytes: number[] = blocks.map(block => {
                     const item = this.container.server.data.items.metadata.items.find(item => item.id === block.fg);
                     const blockBuffer = TileExtra(block, item?.type);
-                    blockBytes.push(...blockBuffer);
-                }
+                    return [...blockBuffer];
+                }).flat();
 
                 const weather = Buffer.alloc(12);
-                    weather.writeUint16LE(0);
+                    weather.writeUint16LE(4);
                     weather.writeUint16LE(0x1, 2);
                     weather.writeUint32LE(0x0, 4);
                     weather.writeUint32LE(0x0, 8);

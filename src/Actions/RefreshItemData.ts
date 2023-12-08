@@ -1,7 +1,7 @@
 import { PieceContext } from "@sapphire/pieces";
-import { Peer, TankPacket, Variant } from "growsockets";
 import { Action } from "../Stores/Action";
 import { TankTypes } from "../Utilities/Enums/TankTypes";
+import { Peer, Variant, TankPacket } from "growtopia.js";
 
 export class RefreshItemData extends Action {
     public constructor(context: PieceContext) {

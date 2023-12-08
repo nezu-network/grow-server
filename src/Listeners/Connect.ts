@@ -1,6 +1,6 @@
 import { PieceContext } from "@sapphire/pieces";
-import { Peer, TextPacket } from "growsockets";
 import { Listener } from "../Stores/Listener";
+import { Peer, TextPacket } from "growtopia.js";
 
 export class Connect extends Listener {
     public constructor(context: PieceContext) {
@@ -9,11 +9,11 @@ export class Connect extends Listener {
         })
     }
     public async run(netID: number) {
-        await this.container.logger("Peer", netID, "connected.");
-
-        const peer = Peer.new(this.container.server, netID);
+        this.container.server.peerId.add(netID);
+        const peer = new Peer<{ netID: number }>(this.container.server, netID);
         const packet = TextPacket.from(0x1);
 
+        this.container.logger.info(`Peer with netID ${peer.data?.netID} connected !`);
         peer.send(packet);
     }
 }

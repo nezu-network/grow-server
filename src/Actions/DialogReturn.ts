@@ -1,7 +1,7 @@
 import { PieceContext } from "@sapphire/pieces";
-import { Peer, Variant } from "growsockets";
 import { Action } from "../Stores/Action";
 import { fromAsync, isErr } from "@sapphire/result";
+import { Peer, Variant } from "growtopia.js";
 
 export class EnterGame extends Action {
     public constructor(context: PieceContext) {
