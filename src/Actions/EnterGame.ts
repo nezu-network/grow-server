@@ -24,7 +24,7 @@ export class EnterGame extends Action {
         peer.send(
             Variant.from(
                 "OnConsoleMessage",
-                `Welcome back, \`w${player?.name ? player!.name: `${player!.requestedName}_${player!.tag}`}\`\`.`,
+                `Welcome back, \`8@${player?.name ? player!.name: `${player!.requestedName}_${player!.tag}`}\`\`.`,
             ),
             Variant.from("OnRequestWorldSelectMenu"),
             Variant.from(
