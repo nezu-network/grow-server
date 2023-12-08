@@ -14,6 +14,8 @@ RUN pnpm prune --production
 
 FROM ghcr.io/hazmi35/node:20
 
+RUN apt-get update -y && apt-get install -y openssl
+
 COPY --from=build-stage /tmp/build/dist dist
 COPY --from=build-stage /tmp/build/assets assets
 COPY --from=build-stage /tmp/build/prisma prisma
