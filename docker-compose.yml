@@ -1,0 +1,43 @@
+services:
+  server:
+    deploy:
+      resources:
+        limits:
+          memory: "512M"
+    restart: unless-stopped
+    image: 'ghcr.io/nezu-network/grow-server:latest-dev'
+    env_file:
+      - .env
+    network_mode: "host"
+
+  
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: "256M"
+    restart: unless-stopped
+    image: 'postgres:16-alpine'
+    env_file:
+      - ./postgres/.postgres.env
+    ports:
+      - '5440:5432'
+    networks:
+      internet:
+        aliases:
+          - postgres.internet
+    volumes:
+      - 'postgres:/var/lib/postgresql/data'
+
+volumes:
+  postgres:
+    driver: local
+
+
+networks:
+  internet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.30.0/24
+    internal: false
